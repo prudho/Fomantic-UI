@@ -19,10 +19,53 @@ window = (typeof window != 'undefined' && window.Math == Math)
     : Function('return this')()
 ;
 
+var isFunction = function(obj) {
+  return typeof obj === "function" && typeof obj.nodeType !== "number";
+};
+var isPlainObject = function(obj) {
+  return Object.prototype.toString.call(obj) === '[object Object]';
+};
+var extend = function(out) {
+  out = out || {};
+
+  for (var i = 1; i < arguments.length; i++) {
+    if (!arguments[i])
+      continue;
+
+    for (var key in arguments[i]) {
+      if (arguments[i].hasOwnProperty(key))
+        out[key] = arguments[i][key];
+    }
+  }
+
+  return out;
+};
+var deepExtend = function(out) {
+  out = out || {};
+
+  for (var i = 1; i < arguments.length; i++) {
+    var obj = arguments[i];
+
+    if (!obj)
+      continue;
+
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        if (typeof obj[key] === 'object')
+          out[key] = deepExtend(out[key], obj[key]);
+        else
+          out[key] = obj[key];
+      }
+    }
+  }
+
+  return out;
+};
+
 $.fn.rating = function(parameters) {
   var
-    $allModules     = $(this),
-    moduleSelector  = $allModules.selector || '',
+    allModules      = this,
+    moduleSelector  = allModules.selector || '',
 
     time            = new Date().getTime(),
     performance     = [],
@@ -32,12 +75,12 @@ $.fn.rating = function(parameters) {
     queryArguments  = [].slice.call(arguments, 1),
     returnedValue
   ;
-  $allModules
-    .each(function() {
+  Array.from(allModules)
+    .forEach(function(element) {
       var
-        settings        = ( $.isPlainObject(parameters) )
-          ? $.extend(true, {}, $.fn.rating.settings, parameters)
-          : $.extend({}, $.fn.rating.settings),
+        settings        = ( isPlainObject(parameters) )
+          ? deepExtend({}, $.fn.rating.settings, parameters)
+          : extend({}, $.fn.rating.settings),
 
         namespace       = settings.namespace,
         className       = settings.className,
@@ -45,14 +88,12 @@ $.fn.rating = function(parameters) {
         selector        = settings.selector,
         error           = settings.error,
 
-        eventNamespace  = '.' + namespace,
         moduleNamespace = 'module-' + namespace,
 
-        element         = this,
         instance        = $(this).data(moduleNamespace),
 
         $module         = $(this),
-        $icon           = $module.find(selector.icon),
+        icons = element.querySelectorAll(selector.icon),
 
         initialLoad,
         module
@@ -63,7 +104,7 @@ $.fn.rating = function(parameters) {
         initialize: function() {
           module.verbose('Initializing rating module', settings);
 
-          if($icon.length === 0) {
+          if(icons.length === 0) {
             module.setup.layout();
           }
 
@@ -96,7 +137,7 @@ $.fn.rating = function(parameters) {
         },
 
         refresh: function() {
-          $icon   = $module.find(selector.icon);
+          icons = element.querySelectorAll(selector.icon);
         },
 
         setup: {
@@ -106,46 +147,40 @@ $.fn.rating = function(parameters) {
               html      = $.fn.rating.settings.templates.icon(maxRating)
             ;
             module.debug('Generating icon html dynamically');
-            $module
-              .html(html)
-            ;
+            element.innerHTML = html
             module.refresh();
           }
         },
 
         event: {
           mouseenter: function() {
-            var
-              $activeIcon = $(this)
+            var 
+              nextIcon = this
             ;
-            $activeIcon
-              .nextAll()
-                .removeClass(className.selected)
-            ;
-            $module
-              .addClass(className.selected)
-            ;
-            $activeIcon
-              .addClass(className.selected)
-                .prevAll()
-                .addClass(className.selected)
-            ;
+            while(nextIcon = nextIcon.nextSibling) {
+              nextIcon.classList.remove(className.selected)
+            }
+            element.classList.add(className.selected)
+            this.classList.add(className.selected)
+              var prevIcon = this
+              while(prevIcon = prevIcon.previousSibling) {
+                prevIcon.classList.add(className.selected)
+              }
           },
           mouseleave: function() {
-            $module
-              .removeClass(className.selected)
-            ;
-            $icon
-              .removeClass(className.selected)
-            ;
+            element.classList.remove(className.selected)
+            icons.forEach(
+              function(currentValue) { 
+                currentValue.classList.remove(className.selected); 
+              }
+            )
           },
           click: function() {
             var
-              $activeIcon   = $(this),
               currentRating = module.get.rating(),
-              rating        = $icon.index($activeIcon) + 1,
+              rating        = Array.prototype.indexOf.call(icons, this) + 1,
               canClear      = (settings.clearable == 'auto')
-               ? ($icon.length === 1)
+               ? (icons.length === 1)
                : settings.clearable
             ;
             if(canClear && currentRating == rating) {
@@ -165,20 +200,22 @@ $.fn.rating = function(parameters) {
         bind: {
           events: function() {
             module.verbose('Binding events');
-            $module
-              .on('mouseenter' + eventNamespace, selector.icon, module.event.mouseenter)
-              .on('mouseleave' + eventNamespace, selector.icon, module.event.mouseleave)
-              .on('click'      + eventNamespace, selector.icon, module.event.click)
-            ;
+            element.querySelectorAll(selector.icon).forEach(function (el) {
+              el.addEventListener('mouseenter', module.event.mouseenter);
+              el.addEventListener('mouseleave', module.event.mouseleave);
+              el.addEventListener('click', module.event.click);
+            })
           }
         },
 
         remove: {
           events: function() {
             module.verbose('Removing events');
-            $module
-              .off(eventNamespace)
-            ;
+            element.querySelectorAll(selector.icon).forEach(function (el) {
+              el.removeEventListener('mouseenter', module.event.mouseenter);
+              el.removeEventListener('mouseleave', module.event.mouseleave);
+              el.removeEventListener('click', module.event.click);
+            })
           },
           initialLoad: function() {
             initialLoad = false;
@@ -188,17 +225,13 @@ $.fn.rating = function(parameters) {
         enable: function() {
           module.debug('Setting rating to interactive mode');
           module.bind.events();
-          $module
-            .removeClass(className.disabled)
-          ;
+          element.classList.remove(className.disabled);
         },
 
         disable: function() {
           module.debug('Setting rating to read-only mode');
           module.remove.events();
-          $module
-            .addClass(className.disabled)
-          ;
+          element.classList.add(className.disabled)
         },
 
         is: {
@@ -206,28 +239,34 @@ $.fn.rating = function(parameters) {
             return initialLoad;
           },
           disabled: function() {
-            return $module.hasClass(className.disabled);
+            return element.classList.contains(className.disabled);
           }
         },
 
         get: {
           initialRating: function() {
-            if($module.data(metadata.rating) !== undefined) {
-              $module.removeData(metadata.rating);
-              return $module.data(metadata.rating);
+            if(element.dataset[metadata.rating] !== undefined) {
+              // delete element.dataset[metadata.rating]
+              // Gné ?
+              //$module.removeData(metadata.rating);
+              return element.dataset[metadata.rating];
             }
             return settings.initialRating;
           },
           maxRating: function() {
-            if($module.data(metadata.maxRating) !== undefined) {
-              $module.removeData(metadata.maxRating);
-              return $module.data(metadata.maxRating);
+            if(element.dataset[metadata.maxRating] !== undefined) {
+              // delete element.dataset[metadata.maxRating]
+              // Gné ?
+              //$module.removeData(metadata.maxRating);
+              return element.dataset[metadata.maxRating];
             }
             return settings.maxRating;
           },
           rating: function() {
             var
-              currentRating = $icon.filter('.' + className.active).length
+              currentRating = Array.from(icons).filter(function (icon) {
+                return icon.classList.contains(className.active)
+              }).length
             ;
             module.verbose('Current rating retrieved', currentRating);
             return currentRating;
@@ -240,22 +279,21 @@ $.fn.rating = function(parameters) {
               ratingIndex = (rating - 1 >= 0)
                 ? (rating - 1)
                 : 0,
-              $activeIcon = $icon.eq(ratingIndex)
+              activeIcon = icons[ratingIndex]
             ;
-            $module
-              .removeClass(className.selected)
-            ;
-            $icon
-              .removeClass(className.selected)
-              .removeClass(className.active)
-            ;
+            element.classList.remove(className.selected);
+            icons.forEach(
+              function(currentValue) { 
+                currentValue.classList.remove(className.selected, className.active); 
+              }
+            )
             if(rating > 0) {
               module.verbose('Setting current rating to', rating);
-              $activeIcon
-                .prevAll()
-                .addBack()
-                  .addClass(className.active)
-              ;
+              activeIcon.classList.add(className.active)
+              var prevIcon = activeIcon
+              while(prevIcon = prevIcon.previousSibling) {
+                prevIcon.classList.add(className.active)
+              }
             }
             if(!module.is.initialLoad()) {
               settings.onRate.call(element, rating);
@@ -266,14 +304,21 @@ $.fn.rating = function(parameters) {
           }
         },
 
+        /*isFunction: function(obj) {
+          return typeof obj === "function" && typeof obj.nodeType !== "number";
+        },
+        isPlainObject: function(obj) {
+          return Object.prototype.toString.call(obj) === '[object Object]';
+        },*/
+
         setting: function(name, value) {
           module.debug('Changing setting', name, value);
-          if( $.isPlainObject(name) ) {
-            $.extend(true, settings, name);
+          if( isPlainObject(name) ) {
+            deepExtend(settings, name);
           }
           else if(value !== undefined) {
-            if($.isPlainObject(settings[name])) {
-              $.extend(true, settings[name], value);
+            if(isPlainObject(settings[name])) {
+              deepExtend(settings[name], value);
             }
             else {
               settings[name] = value;
@@ -284,8 +329,8 @@ $.fn.rating = function(parameters) {
           }
         },
         internal: function(name, value) {
-          if( $.isPlainObject(name) ) {
-            $.extend(true, module, name);
+          if( isPlainObject(name) ) {
+            deepExtend(module, name);
           }
           else if(value !== undefined) {
             module[name] = value;
@@ -351,15 +396,15 @@ $.fn.rating = function(parameters) {
             ;
             time = false;
             clearTimeout(module.performance.timer);
-            $.each(performance, function(index, data) {
+            performance.forEach(function(data) {
               totalTime += data['Execution Time'];
             });
             title += ' ' + totalTime + 'ms';
             if(moduleSelector) {
               title += ' \'' + moduleSelector + '\'';
             }
-            if($allModules.length > 1) {
-              title += ' ' + '(' + $allModules.length + ')';
+            if(allModules.length > 1) {
+              title += ' ' + '(' + allModules.length + ')';
             }
             if( (console.group !== undefined || console.table !== undefined) && performance.length > 0) {
               console.groupCollapsed(title);
@@ -367,7 +412,7 @@ $.fn.rating = function(parameters) {
                 console.table(performance);
               }
               else {
-                $.each(performance, function(index, data) {
+                performance.forEach(function(data) {
                   console.log(data['Name'] + ': ' + data['Execution Time']+'ms');
                 });
               }
@@ -388,19 +433,19 @@ $.fn.rating = function(parameters) {
           if(typeof query == 'string' && object !== undefined) {
             query    = query.split(/[\. ]/);
             maxDepth = query.length - 1;
-            $.each(query, function(depth, value) {
+            query.forEach(function(value, depth) {
               var camelCaseValue = (depth != maxDepth)
                 ? value + query[depth + 1].charAt(0).toUpperCase() + query[depth + 1].slice(1)
                 : query
               ;
-              if( $.isPlainObject( object[camelCaseValue] ) && (depth != maxDepth) ) {
+              if( isPlainObject( object[camelCaseValue] ) && (depth != maxDepth) ) {
                 object = object[camelCaseValue];
               }
               else if( object[camelCaseValue] !== undefined ) {
                 found = object[camelCaseValue];
                 return false;
               }
-              else if( $.isPlainObject( object[value] ) && (depth != maxDepth) ) {
+              else if( isPlainObject( object[value] ) && (depth != maxDepth) ) {
                 object = object[value];
               }
               else if( object[value] !== undefined ) {
@@ -412,13 +457,13 @@ $.fn.rating = function(parameters) {
               }
             });
           }
-          if ( $.isFunction( found ) ) {
+          if ( isFunction( found ) ) {
             response = found.apply(context, passedArguments);
           }
           else if(found !== undefined) {
             response = found;
           }
-          if($.isArray(returnedValue)) {
+          if(Array.isArray(returnedValue)) {
             returnedValue.push(response);
           }
           else if(returnedValue !== undefined) {
