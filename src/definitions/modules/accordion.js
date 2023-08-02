@@ -302,6 +302,9 @@
                         $openTitles
                             .removeClass(className.active)
                         ;
+                        $openContents.each(function (_idx, element) {
+                            settings.onClosing.call(element);
+                        });
                         $openContents
                             .removeClass(className.animating)
                             .stop(true, true)
@@ -333,6 +336,7 @@
                             .slideUp(settings.duration, settings.easing, function () {
                                 $(this).removeClass(className.active);
                                 module.reset.display.call(this);
+                                settings.onClose.call(this);
                             })
                         ;
                     }
