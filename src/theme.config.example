@@ -55,6 +55,7 @@
 @checkbox   : 'default';
 @dimmer     : 'default';
 @dropdown   : 'default';
+@editable   : 'default';
 @embed      : 'default';
 @modal      : 'default';
 @nag        : 'default';

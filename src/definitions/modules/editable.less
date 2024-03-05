@@ -1,0 +1,62 @@
+/*!
+ * # Fomantic-UI - Editable
+ * http://github.com/fomantic/Fomantic-UI/
+ *
+ *
+ * Released under the MIT license
+ * http://opensource.org/licenses/MIT
+ *
+ */
+
+
+/*******************************
+            Theme
+*******************************/
+
+@type    : 'module';
+@element : 'editable';
+
+@import (multiple) '../../theme.config';
+
+/*******************************
+            Editable
+*******************************/
+
+.ui.editable {
+  text-decoration: none;
+  border-bottom: dashed 1px #1678c2;
+}
+
+.editable.inline.container {
+  display: inline-block;
+  // vertical-align: middle;
+  // width: auto;
+}
+
+.editable.actions {
+  margin-left: 0.5rem;
+}
+
+.editable.container .ui.calendar > .ui.input {
+  min-width: 150px;
+}
+
+.editable.container .ui.form > .field {
+  margin: 0;
+}
+
+/*******************************
+             States
+*******************************/
+
+.ui.disabled.editable {
+  color: @disabledTextColor;
+  cursor: default;
+  border-bottom: none;
+}
+
+.ui.editable[empty] {
+  color: @lightRed;
+}
+
+.loadUIOverrides();

@@ -414,6 +414,9 @@
 @variationDropdownPointing: true;
 @variationDropdownSizes: @variationAllSizes;
 
+/* Editable */
+@variationEditableDisabled: true;
+
 /* Embed */
 @variationEmbedRatio: true;
 

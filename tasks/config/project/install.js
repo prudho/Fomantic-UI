@@ -388,6 +388,7 @@ module.exports = {
           { name: "checkbox", checked: true },
           { name: "dimmer", checked: true },
           { name: "dropdown", checked: true },
+          { name: "editable", checked: true },
           { name: "embed", checked: true },
           { name: "modal", checked: true },
           { name: "nag", checked: true },

@@ -446,6 +446,7 @@ $.site.settings = {
     'checkbox',
     'dimmer',
     'dropdown',
+    'editable',
     'embed',
     'form',
     'modal',
