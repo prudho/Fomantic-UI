@@ -73,6 +73,7 @@ module.exports = {
         'dimmer',
         'divider',
         'dropdown',
+        'editable',
         'embed',
         'emoji',
         'feed',

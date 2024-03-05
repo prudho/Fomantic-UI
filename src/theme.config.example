@@ -50,26 +50,27 @@
 @table: 'default';
 
 /* Modules */
-@accordion: 'default';
-@calendar: 'default';
-@checkbox: 'default';
-@dimmer: 'default';
-@dropdown: 'default';
-@embed: 'default';
-@flyout: 'default';
-@modal: 'default';
-@nag: 'default';
-@popup: 'default';
-@progress: 'default';
-@slider: 'default';
-@rating: 'default';
-@search: 'default';
-@shape: 'default';
-@sidebar: 'default';
-@sticky: 'default';
-@tab: 'default';
-@toast: 'default';
-@transition: 'default';
+@accordion  : 'default';
+@calendar   : 'default';
+@checkbox   : 'default';
+@dimmer     : 'default';
+@dropdown   : 'default';
+@editable   : 'default';
+@embed      : 'default';
+@flyout     : 'default';
+@modal      : 'default';
+@nag        : 'default';
+@popup      : 'default';
+@progress   : 'default';
+@slider     : 'default';
+@rating     : 'default';
+@search     : 'default';
+@shape      : 'default';
+@sidebar    : 'default';
+@sticky     : 'default';
+@tab        : 'default';
+@toast      : 'default';
+@transition : 'default';
 
 /* Views */
 @ad: 'default';

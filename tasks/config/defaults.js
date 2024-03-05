@@ -89,6 +89,7 @@ module.exports = {
         'checkbox',
         'dimmer',
         'dropdown',
+        'editable',
         'embed',
         'flyout',
         'modal',
