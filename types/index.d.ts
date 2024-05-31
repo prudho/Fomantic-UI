@@ -11,6 +11,7 @@
 /// <reference path="fomantic-ui-dimmer.d.ts" />
 /// <reference path="fomantic-ui-dimmer.d.ts" />
 /// <reference path="fomantic-ui-dropdown.d.ts" />
+/// <reference path="fomantic-ui-editable.d.ts" />
 /// <reference path="fomantic-ui-embed.d.ts" />
 /// <reference path="fomantic-ui-flyout.d.ts" />
 /// <reference path="fomantic-ui-form.d.ts" />
@@ -36,6 +37,7 @@ interface JQuery {
     checkbox:   FomanticUI.Checkbox;
     dimmer:     FomanticUI.Dimmer;
     dropdown:   FomanticUI.Dropdown;
+    editable:   FomanticUI.Editable;
     embed:      FomanticUI.Embed;
     flyout:     FomanticUI.Flyout;
     form:       FomanticUI.Form;

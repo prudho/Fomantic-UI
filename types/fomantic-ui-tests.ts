@@ -6,6 +6,7 @@ $().calendar(); // $ExpectType JQuery<HTMLElement>
 $().checkbox(); // $ExpectType JQuery<HTMLElement>
 $('body').dimmer(); // $ExpectType JQuery<HTMLElement>
 $().dropdown(); // $ExpectType JQuery<HTMLElement>
+$().editable(); // $ExpectType JQuery<HTMLElement>
 $().embed(); // $ExpectType JQuery<HTMLElement>
 $().flyout(); // $ExpectType JQuery<HTMLElement>
 $().form(); // $ExpectType JQuery<HTMLElement>
