@@ -79,6 +79,12 @@
                         return;
                     }
 
+                    if (settings.mode !== 'inline' && settings.mode !== 'popup') {
+                        module.error(error.invalid_mode);
+
+                        return;
+                    }
+
                     if (module.get.text() === '' && module.get.value() === '') {
                         if ((settings.type === 'checklist' || settings.type === 'radio') && settings.source) {
                             const items = settings.source.filter(function (item) {
@@ -209,7 +215,7 @@
                             ? $(settings.templates.container_inline())
                             : (settings.mode === 'popup'
                                 ? $(settings.templates.container_popup())
-                                : null); // FIXME
+                                : null);
 
                         $form = $(settings.templates.form());
                         $actions = $(settings.templates.actions());
@@ -764,7 +770,7 @@
         verbose: false,
         performance: true,
 
-        type: 'text', // 'text' | 'textarea'
+        type: 'text', // 'text' | 'textarea' | 'calendar' | 'dropdown' | 'checklist' | 'radio'
         mode: 'popup', // 'popup' | 'inline',
         exclusive: false,
         source: null,
@@ -793,6 +799,7 @@
             popup: 'UI Popup, a required component is not included in this page',
             calendar: 'UI Calendar, a required component is not included in this page',
             dropdown: 'UI Dropdown, a required component is not included in this page',
+            invalid_mode: 'Invalid mode detected. It should be `popup` or `inline`',
         },
 
         metadata: {
