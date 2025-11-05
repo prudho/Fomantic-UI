@@ -2,14 +2,12 @@
            Summarize Docs
 *******************************/
 
-const
-    // node dependencies
-    fs           = require('fs'),
-    console      = require('better-console'),
-    YAML         = require('yamljs')
-;
+// node dependencies
+const console = require('@fomantic/better-console');
+const path = require('node:path');
+const YAML = require('js-yaml');
 
-let data = {};
+const data = {};
 
 /**
  * Test for prefix in string.
@@ -22,7 +20,7 @@ function startsWith(str, prefix) {
 }
 
 function inArray(needle, haystack) {
-    let length = haystack.length;
+    const length = haystack.length;
     for (let i = 0; i < length; i++) {
         if (haystack[i] === needle) {
             return true;
@@ -33,7 +31,7 @@ function inArray(needle, haystack) {
 }
 
 /**
- * Parses a file for metadata and stores result in data object.
+ * Parses a file for metadata and stores result in a data object.
  * @param {File} file - object provided by map-stream.
  * @param {function(?,File)} - callback provided by map-stream to
  * reply when done.
@@ -49,41 +47,36 @@ function parser(file, callback) {
     }
 
     try {
-        let
-            /** @type {string} */
-            text     = String(file.contents.toString('utf8')),
-            lines    = text.split('\n'),
-            filename = file.path.slice(0, -4),
-            key      = 'server/documents',
-            position = filename.indexOf(key)
-        ;
+        /** @type {string} */
+        const text = String(file.contents.toString('utf8'));
+        const lines = text.split('\n');
+        let filename = file.path.slice(0, -4);
+        const key = 'server' + path.sep + 'documents';
+        const position = filename.indexOf(key);
 
         // exit conditions
         if (!lines) {
             return;
         }
-        if (position < 0) {
+        if (position === -1) {
             return callback(null, file);
         }
 
-        filename = filename.slice(position + key.length + 1, filename.length);
+        filename = filename.slice(position + key.length + 1).replaceAll(path.win32.sep, path.posix.sep);
 
-        let
-            lineCount = lines.length,
-            active    = false,
-            yaml      = [],
-            categories = [
-                'UI Element',
-                'UI Global',
-                'UI Collection',
-                'UI View',
-                'UI Module',
-                'UI Behavior',
-            ],
-            index,
-            meta,
-            line
-        ;
+        const lineCount = lines.length;
+        let active = false;
+        const yaml = [];
+        const categories = [
+            'UI Element',
+            'UI Global',
+            'UI Collection',
+            'UI View',
+            'UI Module',
+            'UI Behavior',
+        ];
+        let index;
+        let line;
 
         for (index = 0; index < lineCount; index++) {
             line = lines[index];
@@ -93,27 +86,23 @@ function parser(file, callback) {
                 if (startsWith(line, '---')) {
                     active = true;
                 }
-
-                continue;
+            } else {
+                // End of metadata block, stop parsing.
+                if (startsWith(line, '---')) {
+                    break;
+                }
+                yaml.push(line);
             }
-            // End of metadata block, stop parsing.
-            if (startsWith(line, '---')) {
-                break;
-            }
-            yaml.push(line);
         }
 
         // Parse yaml.
-        meta = YAML.parse(yaml.join('\n'));
+        const meta = YAML.load(yaml.join('\n'));
         if (meta && meta.type && meta.title && inArray(meta.type, categories)) {
             meta.category = meta.type;
             meta.filename = filename;
             meta.url = '/' + filename;
-            // Primary key will by filepath
-            data[meta.element] = meta;
-        } else {
-            // skip
-            // console.log(meta);
+            // Primary key will be filepath
+            data[meta.element.toLowerCase()] = meta;
         }
     } catch (error) {
         console.log(error, file.path);
