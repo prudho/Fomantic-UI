@@ -548,16 +548,20 @@
                             settings.onChange.call(element, value, text);
                         }
 
-                        if (settings.onBeforeChange.constructor.name === 'AsyncFunction') {
-                            settings.onBeforeChange.call(element, value, text).then(function (resolve) {
-                                onBeforeChangeCallback(resolve);
-                            });
-                        } else {
-                            onBeforeChangeCallback(settings.onBeforeChange.call(element, value, text));
+                        const oldValue = module.get.value();
+
+                        if (value !== oldValue) {
+                            if (settings.onBeforeChange.constructor.name === 'AsyncFunction') {
+                                settings.onBeforeChange.call(element, oldValue, value, text).then(function (resolve) {
+                                    onBeforeChangeCallback(resolve);
+                                });
+                            } else {
+                                onBeforeChangeCallback(settings.onBeforeChange.call(element, oldValue, value, text));
+                            }
                         }
 
                         /// Without async, we keep it in case of a no-go
-                        // if (settings.onBeforeChange.call(element, value, text) === false) {
+                        // if (settings.onBeforeChange.call(element, oldValue, value, text) === false) {
                         //   return false;
                         // }
 
@@ -781,7 +785,7 @@
         /* Callbacks */
 
         // callback before a value change, return false to cancel the change
-        onBeforeChange: function (value, text) {
+        onBeforeChange: function (oldValue, value, text) {
             return true;
         },
 
